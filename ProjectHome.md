@@ -1,0 +1,2 @@
+Keyla is a keyboard layout switcher. You may proceed to [the main page in English](http://code.google.com/p/keyla/wiki/en_Main) or choose one of the following languages:
+  * [Russian (Русский)](http://code.google.com/p/keyla/wiki/ru_Main)
