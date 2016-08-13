@@ -40,18 +40,31 @@ void HotKeyAutomaton::postEvent(WPARAM wparam, LPARAM lparam) {
 		? (commandKey ? P_com : P_smb)
 		: (commandKey ? R_com : R_smb);
 
+	tstring trace;
 	unsigned int tempModifiers;
 	switch (m_state) {
 		case StateA:
 			switch(event) {
 				case P_smb:
+					trace = L"StateA trigger: ";
+					OutputDebugString((trace + getHotKeyWithSymbolKey(vk, extended).text() + L"\n").c_str());
 					callbackHotKey(getHotKeyWithSymbolKey(vk, extended));
 				break;
 				case P_com:
 					m_state = StateB;
 					updateCommandKeys(true, vk);
+					trace = L"StateA progress: ";
+					OutputDebugString((trace + HotKey(0, m_modifiers).text() + L"\n").c_str());
 					callbackProgress(HotKey(0, m_modifiers));
 				break;
+				case R_smb:
+					trace = L"StateA release SMB: ";
+					OutputDebugString((trace + HotKey(0, m_modifiers).text() + L"\n").c_str());
+					break;
+				case R_com:
+					trace = L"StateA release COM: ";
+					OutputDebugString((trace + HotKey(0, m_modifiers).text() + L"\n").c_str());
+					break;
 				default:
 					callbackNoop();
 			}
@@ -60,23 +73,34 @@ void HotKeyAutomaton::postEvent(WPARAM wparam, LPARAM lparam) {
 			switch(event) {
 				case P_smb:
 					m_state = StateC;
+					trace = L"StateB trigger: ";
+					OutputDebugString((trace + getHotKeyWithSymbolKey(vk, extended).text() + L"\n").c_str());
 					callbackHotKey(getHotKeyWithSymbolKey(vk, extended));
 				break;
 				case P_com:
 					updateCommandKeys(true, vk);
+					trace = L"StateB progress: ";
+					OutputDebugString((trace + HotKey(0, m_modifiers).text() + L"\n").c_str());
 					callbackProgress(HotKey(0, m_modifiers));
 				break;
 				case R_com:
 					tempModifiers = m_modifiers;
 					updateCommandKeys(false, vk);
 					if (m_modifiers) {
+						trace = L"StateB trigger -> C: ";
+						OutputDebugString((trace + HotKey(0, tempModifiers).text() + L"\n").c_str());
 						m_state = StateC;
 						callbackHotKey(HotKey(0, tempModifiers));
 					}
 					else {
+						trace = L"StateB trigger -> A: ";
+						OutputDebugString((trace + HotKey(0, tempModifiers).text() + L"\n").c_str());
 						m_state = StateA;
 						callbackHotKey(HotKey(0, tempModifiers));
 					}
+				case R_smb:
+					trace = L"StateB release SMB: ";
+					OutputDebugString((trace + HotKey(0, m_modifiers).text() + L"\n").c_str());
 				break;
 				default:
 					callbackNoop();
@@ -85,20 +109,30 @@ void HotKeyAutomaton::postEvent(WPARAM wparam, LPARAM lparam) {
 		case StateC:
 			switch(event) {
 				case P_smb:
+					trace = L"StateC trigger: ";
+					OutputDebugString((trace + getHotKeyWithSymbolKey(vk, extended).text() + L"\n").c_str());
 					callbackHotKey(getHotKeyWithSymbolKey(vk, extended));
 				break;
 				case P_com:
 					updateCommandKeys(true, vk);
+					trace = L"StateC progress: ";
+					OutputDebugString((trace + HotKey(0, m_modifiers).text() + L"\n").c_str());
 					callbackProgress(HotKey(0, m_modifiers));
 				break;
 				case R_com:
 					tempModifiers = m_modifiers;
+					trace = L"StateC release: ";
+					OutputDebugString((trace + HotKey(0, m_modifiers).text() + L"\n").c_str());
 					updateCommandKeys(false, vk);
 					if (m_modifiers)
 						m_state = StateC;
 					else
 						m_state = StateA;
 					callbackNoop();
+				break;
+				case R_smb:
+					trace = L"StateC release SMB: ";
+					OutputDebugString((trace + HotKey(0, m_modifiers).text() + L"\n").c_str());
 				break;
 				default:
 					callbackNoop();
